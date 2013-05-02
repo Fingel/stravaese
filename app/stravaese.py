@@ -9,14 +9,17 @@ def index():
 
 @app.route('/ride/<ride>')
 def get_ride(ride):
-	url = "".join(['http://www.strava.com/api/v2/rides/',ride,'/map_details?token=e8cf53eee7a51d8bef8c&threshold=100'])
+	url = "".join(['http://app.strava.com/api/v1/streams/',ride])
 	response = urllib2.urlopen(url)
 	content = response.read()
 	return "%s" % content
 	
-@app.route('/usr/<username>')
-def user_profile(username):
-	return 'User %s' % username
+@app.route('/rides/<userid>')
+def user_profile(userid):
+	url = "".join(['http://www.strava.com/api/v1/rides?athleteId=',userid])
+	response = urllib2.urlopen(url)
+	content = response.read()
+	return "%s" % content
 	
 @app.route('/post/<int:some_id>')
 def adtwo(some_id):

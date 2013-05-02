@@ -1,13 +1,7 @@
-<!doctype html>
-<html>
-<head>
-	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-	<style type="text/css">
-		html { height: 100% }
-		body { height: 100%; margin: 0; padding: 0 }
-		#map-canvas { height: 90%; padding: 20px }
-	</style>
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+{% extends "layout.html" %}
+{% block title %} Index {% endblock %}
+{% block head %}
+{{ super() }}
 	<script type="text/javascript"
 	src="https://maps.googleapis.com/maps/api/js?libraries=visualization&key=AIzaSyCgAUTHQKsBMyxyyCjUx7xU2inuVQVnxNM&sensor=false">
 	</script>
@@ -15,7 +9,7 @@
 	var map
 	function initialize() {
 		var mapOptions = {
-		  center: new google.maps.LatLng(37.884734,-122.269514),
+		  center: new google.maps.LatLng(37.7756, -122.4193),
 		  zoom: 12,
 		  mapTypeId: google.maps.MapTypeId.TERRAIN
 		};
@@ -25,13 +19,15 @@
       	
       	google.maps.event.addDomListener(window, 'load', initialize);
 	
-	function loadRide(){
-
-            	$.getJSON('/ride/51655860', function(data){
+	function loadRide(rideId){
+		url = "/ride/" + rideId
+            	$.getJSON(url, function(data){
 	      		var ridePath = []
+	      		var bounds =  new google.maps.LatLngBounds()
 	      			$(data.latlng).each(function(index){
 	      				var p = new google.maps.LatLng(data.latlng[index][0], data.latlng[index][1])
 	      				ridePath.push(p)
+	      				bounds.extend(p)
 	      			})
 	      			var rideMap = new google.maps.Polyline({
 					path: ridePath,
@@ -40,14 +36,54 @@
 			    		strokeWeight: 2
 		 		});
 		 		rideMap.setMap(map);
+		 		map.fitBounds(bounds)
 	      		});
       }
+      function loadRider(){
+      		var riderId = $("#riderId").val()
+      		
+      		if(!isNumeric(riderId)){
+      			alert("Invalid Rider Id!");
+      		}
+      		else{
+      			url = "/rides/" + riderId
+      			$.getJSON(url, function(data){
+      				var textToInsert=""
+      				$(data.rides).each(function(index, ride){
+      					textToInsert += '<span class="ride_click_span" onClick="rideDetails(' + ride.id + ')"><a data-dismiss="modal" id="ride_link" href="#" onClick="loadRide(' + ride.id + ')">' + ride.name + '</a><a class="ride_info" href="#" onClick="rideDetails(' + ride.id + ')"><i class="icon-plus"></i></a></span>'
+      				})
+      				$("#ridesList").append(textToInsert);
+      			})
+      		}
+      }
+      function isNumeric(n) {
+  	return !isNaN(parseFloat(n)) && isFinite(n);
+      }
       </script>
-	<title>Ride Loader</title>
 	
-	</head>
-	<body>
-		<input type="button" value="load" id="loadRide" onClick="loadRide()" />
-		<div id="map-canvas">Should be replaced</div>
-	</body>
-</html>
+{% endblock %}
+{% block content %}
+<div id="mapRow" class="row">
+	<div class="span9" id="map-canvas">Should be replaced</div>
+	<div class="span3" id="sidebar">
+		<h1>Ride details</h1>
+		<div class="input-append">
+			<input type="text" id="riderId" class="span2" value="139738"/>
+			<a href="#ridesmodal" type="button" id="rider" class="btn" onClick="loadRider()" data-toggle="modal" data-target="#ridesmodal">Load Rides</a>
+			
+		</div>
+	</div>
+</div>
+<div id="ridesmodal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+    	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    	<h3 id="myModalLabel">Choose a ride</h3>
+    </div>
+    <div class="modal-body">
+    	<ul id="ridesList"></ul>
+    </div>
+    <div class="modal-footer">
+    	<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+</div>   
+{% endblock %}
