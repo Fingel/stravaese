@@ -14,3 +14,7 @@ html { height: 100%; }
 .ride_click_span { width: 90%; padding: 2px}
 
 .ride_click_span:nth-child(even) { background-color: #E9E9E9 }
+
+.ride_details { position: relative; bottom: 0px;}
+
+td { padding-left: 20px; }

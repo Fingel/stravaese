@@ -7,6 +7,7 @@
 	</script>
 	<script type="text/javascript">
 	var map
+	var offset = 0
 	function initialize() {
 		var mapOptions = {
 		  center: new google.maps.LatLng(37.7756, -122.4193),
@@ -39,22 +40,48 @@
 		 		map.fitBounds(bounds)
 	      		});
       }
-      function loadRider(){
+      function loadRider(more){
       		var riderId = $("#riderId").val()
-      		
+      		var textToInsert =""
+      		if(!more){
+      			$("#ridesList").html("");
+      			offset = 0
+      		}
+      		else {
+      			offset += 50
+      		}
       		if(!isNumeric(riderId)){
       			alert("Invalid Rider Id!");
       		}
       		else{
-      			url = "/rides/" + riderId
+      			url = "/rides/" + riderId + '/' + offset
       			$.getJSON(url, function(data){
-      				var textToInsert=""
+
       				$(data.rides).each(function(index, ride){
-      					textToInsert += '<span class="ride_click_span" onClick="rideDetails(' + ride.id + ')"><a data-dismiss="modal" id="ride_link" href="#" onClick="loadRide(' + ride.id + ')">' + ride.name + '</a><a class="ride_info" href="#" onClick="rideDetails(' + ride.id + ')"><i class="icon-plus"></i></a></span>'
+      					textToInsert += '<span class="ride_click_span" onClick="rideDetails(this,' + ride.id + ')"><a data-dismiss="modal" id="ride_link" href="#" onClick="loadRide(' + ride.id + ')">' + ride.name + '</a><i class="ride_info icon-plus"></i></span>'
       				})
       				$("#ridesList").append(textToInsert);
       			})
       		}
+      }
+      
+      function rideDetails(element, rideId){
+      		if($(element).data("expanded")){
+      			$(element).children(".ride_details").html("")
+      			$(element).data("expanded", false)
+      		}
+      		else {
+      			$(element).data("expanded", true)
+	      		url = "/ride/details/" + rideId
+	      		var textToInsert = ""
+	      		$.getJSON(url, function(data){
+	      			textToInsert ='<div class="ride_details"><table><thead><tr><th>Location</th><th>Date</th><th>Distance</th></tr></thead><tbody><tr><td>' + data.ride.location + 
+	      			'</td><td>' + data.ride.start_date_local +
+	      			'</td><td>' + data.ride.distance +
+	      			'</tr></tbody></table></div>'
+	      			$(element).append(textToInsert);
+	      		})
+	      }
       }
       function isNumeric(n) {
   	return !isNaN(parseFloat(n)) && isFinite(n);
@@ -69,7 +96,7 @@
 		<h1>Ride details</h1>
 		<div class="input-append">
 			<input type="text" id="riderId" class="span2" value="139738"/>
-			<a href="#ridesmodal" type="button" id="rider" class="btn" onClick="loadRider()" data-toggle="modal" data-target="#ridesmodal">Load Rides</a>
+			<a href="#ridesmodal" type="button" id="rider" class="btn" onClick="loadRider(false)" data-toggle="modal" data-target="#ridesmodal">Load Rides</a>
 			
 		</div>
 	</div>
@@ -81,9 +108,10 @@
     </div>
     <div class="modal-body">
     	<ul id="ridesList"></ul>
+    	<a href="#" onClick="loadRider(true)">More..</a>
     </div>
     <div class="modal-footer">
-    	<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    	<br/>
     </div>
 </div>   
 {% endblock %}
