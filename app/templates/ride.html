@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block title %} Ride {% endblock %}
+{% block head %}
+{{ super() }}
+	<script type="text/javascript"
+	src="https://maps.googleapis.com/maps/api/js?libraries=visualization&key=AIzaSyCgAUTHQKsBMyxyyCjUx7xU2inuVQVnxNM&sensor=false">
+	</script>
+	<script type="text/javascript">
+	var map
+	var offset = 0
+	$(document).ready(function(){
+		var mapOptions = {
+		  center: new google.maps.LatLng(37.7756, -122.4193),
+		  zoom: 12,
+		  mapTypeId: google.maps.MapTypeId.TERRAIN
+		};
+		map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+		loadRidePath( {{ ride['id'] }}, map);
+      	});
+      	
+      
+      
+      </script>
+	
+{% endblock %}
+{% block content %}
+<div id="mapRow" class="row">
+	<div class="span9" id="map-canvas">Should be replaced</div>
+	<div class="span3" id="sidebar">
+		<h1>Details</h1>
+		Distance: {{ ride['distance'] }}
+		<h1>Segments</h1>
+		{% for effort in segment_list %}
+			{{ effort['segment']['name'] }}
+			<br/>
+		{% endfor %}
+		
+		
+	</div>
+</div>
+{% endblock %}

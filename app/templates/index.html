@@ -8,7 +8,7 @@
 	<script type="text/javascript">
 	var map
 	var offset = 0
-	function initialize() {
+	$(document).ready(function(){
 		var mapOptions = {
 		  center: new google.maps.LatLng(37.7756, -122.4193),
 		  zoom: 12,
@@ -16,31 +16,9 @@
 		};
 		map = new google.maps.Map(document.getElementById("map-canvas"),
 		    mapOptions);
-      	}
+      	});
       	
-      	google.maps.event.addDomListener(window, 'load', initialize);
-	
-	function loadRide(rideId){
-		url = "/ride/" + rideId
-            	$.getJSON(url, function(data){
-	      		var ridePath = []
-	      		var bounds =  new google.maps.LatLngBounds()
-	      			$(data.latlng).each(function(index){
-	      				var p = new google.maps.LatLng(data.latlng[index][0], data.latlng[index][1])
-	      				ridePath.push(p)
-	      				bounds.extend(p)
-	      			})
-	      			var rideMap = new google.maps.Polyline({
-					path: ridePath,
-					strokeColor: "#FF0000",
-			    		strokeOpacity: 1.0,
-			    		strokeWeight: 2
-		 		});
-		 		rideMap.setMap(map);
-		 		map.fitBounds(bounds)
-	      		});
-      }
-      function loadRider(more){
+      function loadRiderRides(more){
       		var riderId = $("#riderId").val()
       		var textToInsert =""
       		if(!more){
@@ -58,7 +36,7 @@
       			$.getJSON(url, function(data){
 
       				$(data.rides).each(function(index, ride){
-      					textToInsert += '<span class="ride_click_span" onClick="rideDetails(this,' + ride.id + ')"><a data-dismiss="modal" id="ride_link" href="#" onClick="loadRide(' + ride.id + ')">' + ride.name + '</a><i class="ride_info icon-plus"></i></span>'
+      					textToInsert += '<span class="ride_click_span" onClick="rideDetails(this,' + ride.id + ')"><a onClick="$(\'#ridesModal\').modal(\'hide\')" id="ride_link" href="/ride/'+ ride.id + '" >' + ride.name + '</a><i class="ride_info icon-plus"></i></span>'
       				})
       				$("#ridesList").append(textToInsert);
       			})
@@ -72,7 +50,7 @@
       		}
       		else {
       			$(element).data("expanded", true)
-	      		url = "/ride/details/" + rideId
+	      		url = "/ride/" + rideId +"/details"
 	      		var textToInsert = ""
 	      		$.getJSON(url, function(data){
 	      			textToInsert ='<div class="ride_details"><table><thead><tr><th>Location</th><th>Date</th><th>Distance</th></tr></thead><tbody><tr><td>' + data.ride.location + 
@@ -83,9 +61,7 @@
 	      		})
 	      }
       }
-      function isNumeric(n) {
-  	return !isNaN(parseFloat(n)) && isFinite(n);
-      }
+      
       </script>
 	
 {% endblock %}
@@ -96,7 +72,7 @@
 		<h1>Ride details</h1>
 		<div class="input-append">
 			<input type="text" id="riderId" class="span2" value="139738"/>
-			<a href="#ridesmodal" type="button" id="rider" class="btn" onClick="loadRider(false)" data-toggle="modal" data-target="#ridesmodal">Load Rides</a>
+			<a href="#ridesmodal" type="button" id="rider" class="btn" onClick="loadRiderRides(false)" data-toggle="modal" data-target="#ridesmodal">Load Rides</a>
 			
 		</div>
 	</div>
@@ -108,7 +84,7 @@
     </div>
     <div class="modal-body">
     	<ul id="ridesList"></ul>
-    	<a href="#" onClick="loadRider(true)">More..</a>
+    	<a href="#" onClick="loadRiderRides(true)">More..</a>
     </div>
     <div class="modal-footer">
     	<br/>
