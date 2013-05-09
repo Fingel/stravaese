@@ -1,7 +1,13 @@
 from flask import Flask, render_template
+from flask.ext.sqlalchemy import SQLAlchemy
 import urllib2
 import json
+
 app = Flask(__name__)
+#might need psycopg2
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:devpass@127.0.0.1/sese'
+db = SQLAlchemy(app)
+
 
 @app.route('/')
 def index():
@@ -37,14 +43,31 @@ def get_ride_segments(ride):
 def user_profile(userid, offset):
 	url = "".join(['http://www.strava.com/api/v1/rides?athleteId=',userid,'&offset=',offset])
 	return "%s" % getServerData(url)
+	
+@app.route('/dbtest')
+def db_test():
+	segments = Segment.query.all()
+	return "%s" % segments
 
 def getServerData(url):
 	response = urllib2.urlopen(url)
 	return response.read()
 
-@app.route('/post/<int:some_id>')
-def adtwo(some_id):
-	return 'Times 2 %d' % (2*some_id)
+#Models
+
+class Segment(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	sid = db.Column(db.Integer, unique=True)
+	rating = db.Column(db.Integer)
+	
+	def __init__(self, sid, rating):
+		self.sid = sid
+		self.rating = rating
+	
+	def __repr__(self):
+		return 'sid: %d' % self.sid
+	
+	
 
 if __name__ == '__main__':
     app.run(debug=True)
