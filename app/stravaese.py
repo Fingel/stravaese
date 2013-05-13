@@ -1,11 +1,12 @@
 from flask import Flask, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
+from datetime import datetime
 import urllib2
 import json
 
 app = Flask(__name__)
 #might need psycopg2
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:devpass@127.0.0.1/sese'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sese.db'
 db = SQLAlchemy(app)
 
 
@@ -66,8 +67,25 @@ class Segment(db.Model):
 	
 	def __repr__(self):
 		return 'sid: %d' % self.sid
+		
+class Comment(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	aid = db.Column(db.Integer)
+	comment = db.Column(db.Text)
+	pub_date = db.Column(db.DateTime)
+	segment_id = db.Column(db.Integer, db.ForeignKey('segment.id'))
+	segment = db.relationship('Segment', backref=db.backref('comments', lazy='dynamic'))
 	
+	def __init__(self, aid, comment, segment, pub_date=None):
+		self.aid = aid
+		self.comment = comment
+		if pub_date is None:
+			pub_date = datetime.utcnow()
+		self.pub_date = pub_date
+		self.segment = segment
 	
+	def __repr__(self):
+		return '<comment: %r>' % self.comment
 
 if __name__ == '__main__':
     app.run(debug=True)
